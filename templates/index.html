@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<title>Preview LilyPond Expression</title>
+<style>
+    form {
+        width: 800px;
+        margin: 10px auto;
+    }
+    textarea {
+        width: 100%;
+        height: 300px;
+        font-family: monospace;
+    }
+</style>
+</head>
+<body>
+<form action='/expressions' method='post'>
+    <textarea id='expr' name='expr'></textarea>
+    <button id='submit' type='submit'>Notate It!</button>
+</form>
+</body>
+<div id='result'></div>
+</html>

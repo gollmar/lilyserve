@@ -4,9 +4,10 @@ import subprocess
 import os.path
 import binascii
 
-from flask import Flask, request, redirect, url_for, send_file
+from flask import Flask, request, redirect, url_for, send_file, render_template
 
 app = Flask(__name__)
+
 
 
 def notate_expression(expr):
@@ -33,27 +34,39 @@ def notate_expression(expr):
                     bookTitleMarkup = ##f
                     scoreTitleMarkup = ##f
                 }''')
-        subprocess.call(['lilypond', 
-                         '-dbackend=eps', 
-                         '-dno-gs-load-fonts', 
-                         '-dinclude-eps-fonts', 
-                         '--png', 
-                         '--output=' + os.path.join(tmpdir, 'output'),
-                         os.path.join(tmpdir, 'expr.ly')])
+        command = ['lilypond', 
+                   '-dbackend=eps', 
+                   '-dno-gs-load-fonts', 
+                   '-dinclude-eps-fonts', 
+                   '--png', 
+                   '--output=' + os.path.join(tmpdir, 'output'),
+                   os.path.join(tmpdir, 'expr.ly')]
+        subprocess.call(command)
         with open(os.path.join(tmpdir, 'output.png'), 'rb') as png:
-            with open(os.path.join('output', expr_hash), 'wb') as png_copy:
+            with open(os.path.join('output', expr_hash + '.png'), 'wb') as png_copy:
                 png_copy.write(png.read())
-    return png_copy + '.png'
+    return expr_hash + '.png'
 
-
-@app.route('/', methods=['GET','POST'])
+@app.route('/')
 def notate():
-    expr = request.args.get('expr')
-    return send_file(os.path.join('output', notate_expression(expr)))
+    return render_template('index.html')
 
-@app.route('/expressions/<expr_hash>.png')
+@app.route('/expressions', methods=['GET','POST'])
+def expressions():
+    if request.method == 'GET':
+        ls = [os.path.splitext(p)[0] for p in os.listdir('output')]
+        return render_template('list_expressions.html', expr_list=ls)
+    elif request.method == 'POST':
+        expr =  request.form.get('expr', request.args.get('expr'))
+        expr_hash = md5(expr.encode()).hexdigest()
+        if not os.path.exists(os.path.join('output', expr_hash + '.png')):
+            notate_expression(expr)
+        return redirect(url_for('get_expression', expr_hash=expr_hash))
+            
+
+@app.route('/expressions/<expr_hash>')
 def get_expression(expr_hash):
-    return expr_hash
+    return send_file(os.path.join('output', expr_hash + '.png'))
 
 if __name__ == '__main__':
     app.run(debug=True)

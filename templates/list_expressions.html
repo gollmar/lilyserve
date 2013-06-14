@@ -1,0 +1,9 @@
+<!doctype html>
+<title>All Expressions</title>
+<body>
+<ul>
+    {% for expr in expr_list %}
+    <li><a href='/expressions/{{expr}}'>{{expr}}</a></li>
+    {% endfor %}
+</ul>
+</body>
