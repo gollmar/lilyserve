@@ -62,7 +62,7 @@ def expressions():
         expr_hash = md5(expr.encode()).hexdigest()
         if not os.path.exists(os.path.join('output', expr_hash + '.png')):
             notate_expression(expr)
-        return json.dumps({'img_src': url_for('expressions',expr_hash=expr_hash)})
+        return json.dumps({'img_src': url_for('get_expression',expr_hash=expr_hash)})
             
 
 @app.route('/expressions/<expr_hash>')
